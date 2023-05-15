@@ -21,7 +21,7 @@ public class Item : ScriptableObject {
 }
 
 public enum ItemType {
-    BuildingBlock,
+    Block,
     Tool
 }
 
