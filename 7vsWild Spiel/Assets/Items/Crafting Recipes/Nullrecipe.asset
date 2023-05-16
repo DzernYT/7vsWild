@@ -9,12 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 562c9cc74207943898ebf4e2c7edaa28, type: 3}
-  m_Name: Mining block
+  m_Script: {fileID: 11500000, guid: 42675838ee52181419a273bf2297aa79, type: 3}
+  m_Name: Nullrecipe
   m_EditorClassIdentifier: 
-  tile: {fileID: 0}
-  type: 0
-  actionType: 0
-  range: {x: 5, y: 4}
-  stackable: 1
-  image: {fileID: -6175098468129261796, guid: 1b39c0fe73f0433468e25eb21cfde7c2, type: 3}
+  inputItems:
+  - {fileID: 11400000, guid: 7e805b34646d50e429185d9d1dddc1cf, type: 2}
+  outputItem: {fileID: 11400000, guid: 7e805b34646d50e429185d9d1dddc1cf, type: 2}
+  craftQuantity: e7030000
