@@ -7,15 +7,20 @@ public class ArmsController : MonoBehaviour
 {
     [Header("Animation Rigging")]
     [SerializeField] private Rig changeWeaponRig;
+    [SerializeField] private TwoBoneIKConstraint rightHandIK;
     public float changeWeaponDuration = 0.3f;
 
+    [Header("Weapon")]
+    [SerializeField] private GameObject WeaponContainer;
     public bool isWeaponAttached = true;
+
+    private bool isWeaponChanging;
 
     Animator armsAnimator;
     PlayerMovment playerMovment;
     PlayerController playerController;
 
-    private bool isWeaponChanging;
+    
 
     void Start()
     {
@@ -23,11 +28,16 @@ public class ArmsController : MonoBehaviour
 
         playerMovment = FindObjectOfType<PlayerMovment>();
         playerMovment.OnPlayerSprintingUpdate += HandleSprintingAnimation;
+        playerMovment.OnPlayerWalkingUpdate += HandleWalkingAnimation;
+        playerMovment.OnPlayerIdleUpdate += HandleIdleAnimation;
 
         playerController = FindObjectOfType<PlayerController>();   
         playerController.OnWeaponChangeUpdate += HandlePlayerWeaponChange;
-        playerController.OnWeaponAttackUpdate += HandlePlayerWeaponAttack;
+        playerController.OnAttackUpdate += HandlePlayerAttack;
         playerController.OnGrabingUpdate += HandlePlayerGrabing;
+
+
+        WeaponManager();
     }
 
     
@@ -43,7 +53,7 @@ public class ArmsController : MonoBehaviour
                 isWeaponChanging = false;
             }
         }
-        // If Rig Weigt is 0, time to Change Weapon 
+        // If Rig Weight is 0, time to Change Weapon 
 
 
 
@@ -53,17 +63,37 @@ public class ArmsController : MonoBehaviour
             changeWeaponRig.weight -= Time.deltaTime / changeWeaponDuration;
     }
 
-    //Checks if Player is sprinting
-    public void HandleSprintingAnimation(bool sprinting)
+
+    public void WeaponManager()
     {
-        if (sprinting)
+        if (isWeaponAttached)
         {
-            armsAnimator.SetBool("isRunning",true);
+            rightHandIK.weight = 1;
+            WeaponContainer.SetActive(true);
         }
         else
         {
-            armsAnimator.SetBool("isRunning", false);
+            rightHandIK.weight = 0;
+            WeaponContainer.SetActive(false);
         }
+    }
+
+    //Checks if Player is Idle
+    public void HandleIdleAnimation()
+    {
+        armsAnimator.SetFloat("speed", 0f, 0.1f, Time.deltaTime);
+    }
+
+    //Checks if Player is Walking
+    public void HandleWalkingAnimation()
+    {
+        armsAnimator.SetFloat("speed", 0.5f, 0.2f, Time.deltaTime);
+    }
+
+    //Checks if Player is sprinting
+    public void HandleSprintingAnimation()
+    {
+        armsAnimator.SetFloat("speed", 1f, 0.2f, Time.deltaTime);
     }
 
     //Checks if Player change Weapon
@@ -73,11 +103,17 @@ public class ArmsController : MonoBehaviour
             isWeaponChanging = true; 
     }
 
-    //Checks if Player is Attacking with Weapon
-    public void HandlePlayerWeaponAttack(bool isAttacking)
+    //Checks if Player is Attacking 
+    public void HandlePlayerAttack()
     {
-        if(isAttacking && isWeaponAttached)
-            armsAnimator.SetTrigger("isAttack");
+        if(isWeaponAttached && rightHandIK.weight == 1)
+        {
+            armsAnimator.SetTrigger("isAttackWithWeapon");
+        }
+        else if(!isWeaponAttached && rightHandIK.weight == 0)
+        {
+            armsAnimator.SetTrigger("isAttackWithHand");
+        }
     }
 
     //Checks if Player is Grabing 

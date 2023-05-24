@@ -10,11 +10,10 @@ public class PlayerController : MonoBehaviour
     public KeyCode attackWeaponKey = KeyCode.Mouse0;
 
     private bool isWeaponChanging;
-    private bool isWeaponAttacking;
     private bool isGrabing;
 
     public event Action <bool> OnWeaponChangeUpdate;
-    public event Action <bool> OnWeaponAttackUpdate;
+    public event Action OnAttackUpdate;
     public event Action <bool> OnGrabingUpdate;
 
 
@@ -30,11 +29,8 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetKeyDown(attackWeaponKey))
         {
-            isWeaponAttacking = true;
-            OnWeaponAttackUpdate?.Invoke(isWeaponAttacking); 
+            OnAttackUpdate?.Invoke(); 
         }
-        else
-        isWeaponAttacking=false;
 
         if (Input.GetKeyDown(grabKey))
         {

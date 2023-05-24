@@ -15,6 +15,7 @@ public class PlayerMovment : MonoBehaviour
     public float groundDrag;
 
     private bool isSprinting;
+    private bool isWalking;
 
     [Header("Jumping")]
     public float jumpForce;
@@ -26,6 +27,8 @@ public class PlayerMovment : MonoBehaviour
     public float crouchSpeed;
     public float crouchYScale;
     private float startYScale;
+
+    private bool isCrouching;
 
     [Header("Keybinds")]
     public KeyCode jumpKey = KeyCode.Space;
@@ -45,7 +48,11 @@ public class PlayerMovment : MonoBehaviour
 
     public Transform orientation;
 
-    public event Action<bool> OnPlayerSprintingUpdate;
+    //For ArmsController
+    public event Action OnPlayerIdleUpdate;
+    public event Action OnPlayerWalkingUpdate;
+    public event Action OnPlayerSprintingUpdate;
+    
 
     float horizontalInput;
     float verticalInput;
@@ -57,6 +64,7 @@ public class PlayerMovment : MonoBehaviour
     public MovementState state;
     public enum MovementState
     {
+        idle,
         walking,
         sprinting,
         crouching,
@@ -125,36 +133,86 @@ public class PlayerMovment : MonoBehaviour
 
     private void StateHandler()
     {
+        // Mode - Idle
+        if(grounded && !isSprinting && !isCrouching && !isCrouching && moveDirection == Vector3.zero)
+        {
+            //For ArmsController
+            OnPlayerIdleUpdate?.Invoke();
+        }
+
+        // Mode - Crouching
+        if (grounded && Input.GetKey(crouchKey))
+        {
+            isCrouching = true;
+            moveSpeed = crouchSpeed;
+
+            //For ArmsController
+            OnPlayerIdleUpdate?.Invoke();
+        }
+        else
+            isCrouching = false;
+
+        // Mode - Walking
+        if (grounded && !isSprinting && !isCrouching && moveDirection != Vector3.zero )
+        {
+            moveSpeed = walkSpeed;
+            isWalking = true;
+
+            //For ArmsController
+            OnPlayerWalkingUpdate?.Invoke(); 
+        }
+        else
+            isWalking = false;
+
 
         // Mode - Sprinting
-        if (grounded && Input.GetKey(sprintKey) && moveDirection != Vector3.zero)
+        if (grounded && !isCrouching && Input.GetKey(sprintKey) && moveDirection != Vector3.zero )
         {
-            state = MovementState.sprinting;
             moveSpeed = sprintSpeed; 
-
             isSprinting = true;
+
+            //For ArmsController
+            OnPlayerSprintingUpdate?.Invoke();
         }
         else
             isSprinting = false;
 
-        OnPlayerSprintingUpdate?.Invoke(isSprinting);
-
-        // Mode - Crouching
-        if (Input.GetKey(crouchKey))
+        if (!grounded)
         {
-            state = MovementState.crouching;
-            moveSpeed = crouchSpeed;
+            //For ArmsController
+            OnPlayerIdleUpdate?.Invoke();
+        }
+
+
+
+        //  ----- StateHanler -----
+
+        // Mode - Sprinting
+        if (grounded && isSprinting && !isCrouching)
+        {
+            state = MovementState.sprinting;
         }
 
         // Mode - Walking
-        else if (grounded)
+        else if (grounded && isWalking && !isCrouching)
         {
             state = MovementState.walking;
-            moveSpeed = walkSpeed;
+        }
+
+        // Mode - Crouching
+        else if (grounded && isCrouching)
+        {
+            state = MovementState.crouching;
+        }
+
+        // Mode - Idle
+        else if (grounded)
+        {
+            state = MovementState.idle;
         }
 
         // Mode - Air
-        else
+        else if(!grounded)
         {
             state = MovementState.air;
         }
